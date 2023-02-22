@@ -35,12 +35,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      - name: Checkout Ontotext Demo App Repository
-        uses: actions/checkout@v3
-        with:
-          repository: 'git@gitlab.ontotext.com:antoniy.kunchev/demo-app.git'
-          ref: 'main'
+    steps:          
+      - name: Checkout Ontotext Demo App
+        run: |
+          rm -rf demo-app
+          git clone https://gitlab.ontotext.com/antoniy.kunchev/demo-app.git
 
       - name: Set up Java ${{ env.JAVA_DISTRO }}-${{ env.JAVA_11_VERSION }}
         uses: actions/setup-java@v3
@@ -61,23 +60,22 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - run: npm ci
-      - run: npm test
 
       - name: Build project
         run: |
+          cd demo-app
           mvn clean install
 
       - name: Run JLink - ${{ runner.os }}
         if: runner.os == 'macOS' || runner.os == 'Linux'
         run: |
-          cd /packaging
+          cd demo-app/packaging
           bash link-native-unix.sh
 
       - name: Run JLink - Windows
         if: runner.os == 'Windows'
         run: |
-          cd /packaging
+          cd demo-app/packaging
           ./link-native-windows.cmd
 
       - name: Set up Java ${{ env.JAVA_DISTRO }}-${{ env.JAVA_17_VERSION }}
@@ -89,19 +87,19 @@ jobs:
       - name: Build Linux Native
         if: runner.os == 'Linux'
         run: |
-          cd /packaging
+          cd demo-app/packaging
           bash build-native-linux.sh
 
       - name: Build MacOS Native
         if: runner.os == 'macOS'
         run: |
-          cd /packaging
+          cd demo-app/packaging
           bash build-native-mac.sh
 
       - name: Build Windows Native
         if: runner.os == 'Windows'
         run: |
-          cd /packaging
+          cd demo-app/packaging
           ./build-native-windows.cmd
 
       - name: Upload Installers
@@ -112,5 +110,11 @@ jobs:
           path: |
             #target/packages/*.pkg
             #target/packages/*.msi
-            target/packages/*.deb
-            target/packages/*.rpm
+            demo-app/target/packages/*.deb
+            demo-app/target/packages/*.rpm
+
+      # Ensure that everything is deleted at the end
+      - name: Clean up
+        if: always()
+        run: |
+          rm -rf demo-app
