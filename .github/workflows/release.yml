@@ -39,7 +39,8 @@ jobs:
       - name: Checkout Ontotext Demo App Repository
         uses: actions/checkout@v3
         with:
-          repository: 'https://gitlab.ontotext.com/antoniy.kunchev/demo-app.git'
+          repository: 'git@gitlab.ontotext.com:antoniy.kunchev/demo-app.git'
+          ref: 'main'
 
       - name: Set up Java ${{ env.JAVA_DISTRO }}-${{ env.JAVA_11_VERSION }}
         uses: actions/setup-java@v3
