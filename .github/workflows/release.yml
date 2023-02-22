@@ -5,13 +5,17 @@ name: Ontotext Demo App Release Pipeline
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+#  push:
+#    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      project-version:
+        required: true
+        type: string
 
 env:
   JAVA_11_VERSION: '11.0.17+8'
@@ -33,7 +37,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Checkout Ontotext Demo App Repository
-      - uses: actions/checkout@v3
+        uses: actions/checkout@v3
         with:
           repository: 'https://gitlab.ontotext.com/antoniy.kunchev/demo-app.git'
 
@@ -52,10 +56,10 @@ jobs:
           restore-keys: ${{ runner.os }}-maven-
 
       # Not needed for this application, but it will be for the Refine
-      - name: Setup node  ${{ NODE_VERSION }}
+      - name: Setup node ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ NODE_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
       - run: npm test
 
